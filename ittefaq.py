@@ -1,17 +1,23 @@
 from selenium.webdriver.common.by import By
 import time
-def scrape_ittefaq(portal_name, driver, url="https://www.ittefaq.com.bd/latest-news"):
-    driver.get(url)
-    time.sleep(5)
+from time_utils import convert_relative_time
 
+
+def scrape_ittefaq(portal_name, driver, url="https://www.ittefaq.com.bd/latest-news"):
+    """Return a list of formatted news lines for Ittefaq (instead of printing)."""
+    out = []
     try:
+        driver.get(url)
+        time.sleep(5)
+
         cards = driver.find_elements(By.CLASS_NAME, "col")
-        print(f"\n==============================")
-        print(f"Fetching: {portal_name}")
-        print(f"==============================")
     except Exception as e:
-        print(f"Failed to find cards: {e}")
-        return
+        out.append(f"Error fetching {portal_name}: {e}")
+        return out
+
+    out.append("\n==============================")
+    out.append(f"Fetching: {portal_name}")
+    out.append("==============================")
 
     for i, card in enumerate(cards[:5]):  # top 5 news
         try:
@@ -22,7 +28,6 @@ def scrape_ittefaq(portal_name, driver, url="https://www.ittefaq.com.bd/latest-n
             except:
                 title = "N/A"
 
-            
             try:
                 time_el = card.find_element(By.CSS_SELECTOR, "span.time, time")
                 raw_time = time_el.text.strip()
@@ -30,9 +35,12 @@ def scrape_ittefaq(portal_name, driver, url="https://www.ittefaq.com.bd/latest-n
                 raw_time = None
 
             if raw_time:
-                print(f"{i+1}. {title} ({raw_time})")
+                ts = convert_relative_time(raw_time)
+                out.append(f"{i+1}. {title} ({ts})")
             else:
-                print(f"{i+1}. {title}")
+                out.append(f"{i+1}. {title}")
         except Exception as e:
-            print(f"Error processing card #{i}: {e}")
+            out.append(f"Error processing card #{i}: {e}")
             continue
+
+    return out

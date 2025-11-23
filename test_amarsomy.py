@@ -1,18 +1,21 @@
 from selenium.webdriver.common.by import By
 import time
+from time_utils import convert_relative_time
 
 
 def scrape_amadershomoy(driver, portal_name="Dainik Amader Shomoy", url="https://www.dainikamadershomoy.com/latest/all"):
-    driver.get(url)
-
-
+    """Return list of formatted news lines for Amader Shomoy."""
+    out = []
     try:
+        driver.get(url)
         cards = driver.find_elements(By.CSS_SELECTOR, ".random-news")
-        print(f"\n==============================")
-        print(f"📰 Fetching: {portal_name}")
-        print(f"==============================")
-    except:
-        return
+    except Exception as e:
+        out.append(f"Error fetching {portal_name}: {e}")
+        return out
+
+    out.append("\n==============================")
+    out.append(f"📰 Fetching: {portal_name}")
+    out.append("==============================")
 
     for i in range(5):  # fixed top 5 news
         card = cards[i] if i < len(cards) else None
@@ -44,6 +47,9 @@ def scrape_amadershomoy(driver, portal_name="Dainik Amader Shomoy", url="https:/
                     pass
 
         if published_time:
-            print(f"{i+1}. {title} ({published_time})")
+            ts = convert_relative_time(published_time)
+            out.append(f"{i+1}. {title} ({ts})")
         else:
-            print(f"{i+1}. {title}")
+            out.append(f"{i+1}. {title}")
+
+    return out
