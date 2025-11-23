@@ -1,0 +1,7 @@
+selenium
+webdriver-manager
+requests
+urllib3
+certifi
+idna
+chardet
